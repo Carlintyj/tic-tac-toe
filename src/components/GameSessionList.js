@@ -69,7 +69,8 @@ const GameSessionList = () => {
   }
 
   const ongoingGames = games.filter(game => !game.winner);
-  const completedGames = games.filter(game => game.winner);
+  const allCompletedGames = games.filter(game => game.winner);
+  const completedGames = allCompletedGames.filter(game => game.playerX === username || game.playerO === username);
 
   // Splitting games into categories
   const yourGames = ongoingGames.filter(game => game.playerX === username || game.playerO === username);

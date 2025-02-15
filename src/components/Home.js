@@ -64,7 +64,7 @@ const Home = () => {
     setGeneratedUsername(anonymousName);
     setOpenModal(false);
     saveUsername(anonymousName);
-    navigate(`/sessions?username=${anonymousName}`);
+    navigate(`/sessions`);
   };
 
   const handleSubmitUsername = () => {
@@ -76,7 +76,7 @@ const Home = () => {
       saveUsername('anonymous');
     }
     setOpenModal(false);
-    navigate(`/sessions?username=${generatedUsername}`);
+    navigate(`/sessions`);
   };
 
   return (

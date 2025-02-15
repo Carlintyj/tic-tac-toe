@@ -2,8 +2,6 @@ import axios from 'axios';
 
 const API_URL = "http://" + process.env.REACT_APP_API_URL + "/api" || 'http://localhost:4000/api';
 
-console.log('API_URL:', API_URL);
-
 export const createGame = async () => {
   const response = await axios.post(`${API_URL}/games`);
   return response.data;
