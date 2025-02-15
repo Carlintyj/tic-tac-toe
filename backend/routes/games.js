@@ -25,15 +25,12 @@ router.post('/:id/join', async (req, res) => {
 
     const game = await Game.findById(id);
     if (!game) return res.status(404).json({ error: 'Game not found' });
-    console.log("1")
 
     const result = await game.addPlayer(username);
-    console.log("2")
     
     if (!result.success) {
       return res.status(400).json({ error: result.message });
     }
-    console.log("3")
 
     res.json({
       message: result.message,

@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { 
-  Container, Typography, List, ListItem, ListItemText, Button, CircularProgress, 
-  Box, Tabs, Tab, Paper, Avatar
+import {
+  Container, Typography, List, ListItem, ListItemText, Button, CircularProgress,
+  Box, Tabs, Tab, Paper, Avatar, Divider
 } from '@mui/material';
 import { styled } from '@mui/system';
 import { listGames, createGame, joinGame } from '../services/api';
@@ -71,6 +71,11 @@ const GameSessionList = () => {
   const ongoingGames = games.filter(game => !game.winner);
   const completedGames = games.filter(game => game.winner);
 
+  // Splitting games into categories
+  const yourGames = ongoingGames.filter(game => game.playerX === username || game.playerO === username);
+  const availableGames = ongoingGames.filter(game => !game.playerX || !game.playerO);
+  const fullGames = ongoingGames.filter(game => game.playerX && game.playerO && (game.playerX !== username && game.playerO !== username));
+
   return (
     <StyledContainer maxWidth="md">
       {/* Display Username */}
@@ -100,13 +105,133 @@ const GameSessionList = () => {
       </Paper>
 
       {tabIndex === 0 && (
-        <StyledList>
-          {ongoingGames.length > 0 ? (
-            ongoingGames.map((game) => (
+        <>
+          {/* Your Games */}
+          <Typography variant="h6" component="h2" gutterBottom color="textSecondary">
+            Your Games
+          </Typography>
+          <StyledList aria-live="polite">
+            {yourGames.length > 0 ? (
+              yourGames.map((game) => (
+                <ListItem key={game._id} role="listitem">
+                  <ListItemText
+                    primary={`Game ${game.roomId}`}
+                    secondary={`Created: ${new Date(game.createdAt).toLocaleString()}`}
+                  />
+                  <Box display="flex" flexDirection="column" mr={4}>
+                    <Typography variant="body2" color="textSecondary">
+                      Player X: {game.playerX}
+                    </Typography>
+                    <Typography variant="body2" color="textSecondary">
+                      Player O: {game.playerO || 'Waiting for player...'}
+                    </Typography>
+                  </Box>
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={() => handleJoinGame(game._id)}
+                    aria-label={`Rejoin Game ${game.roomId}`}
+                  >
+                    {game.playerX && game.playerO ? 'Rejoin' : 'Waiting for Players...'}
+                  </Button>
+                </ListItem>
+              ))
+            ) : (
+              <Typography variant="body1" align="center" color="textSecondary">
+                No games you're currently involved in.
+              </Typography>
+            )}
+          </StyledList>
+
+          <Divider sx={{ my: 2 }} />
+
+          {/* Available Games */}
+          <Typography variant="h6" component="h2" gutterBottom color="textSecondary">
+            Available Games
+          </Typography>
+          <StyledList aria-live="polite">
+            {availableGames.length > 0 ? (
+              availableGames.map((game) => (
+                <ListItem key={game._id} role="listitem">
+                  <ListItemText
+                    primary={`Game ${game.roomId}`}
+                    secondary={`Created: ${new Date(game.createdAt).toLocaleString()}`}
+                  />
+                  <Box display="flex" flexDirection="column" mr={4}>
+                    <Typography variant="body2" color="textSecondary">
+                      Player X: {game.playerX || 'Waiting for player...'}
+                    </Typography>
+                    <Typography variant="body2" color="textSecondary">
+                      Player O: {game.playerO || 'Waiting for player...'}
+                    </Typography>
+                  </Box>
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={() => handleJoinGame(game._id)}
+                    disabled={game.playerX && game.playerO}
+                    aria-label={`Join Game ${game.roomId}`}
+                  >
+                    {game.playerX && game.playerO ? 'Full' : 'Join'}
+                  </Button>
+                </ListItem>
+              ))
+            ) : (
+              <Typography variant="body1" align="center" color="textSecondary">
+                No available games.
+              </Typography>
+            )}
+          </StyledList>
+
+          <Divider sx={{ my: 2 }} />
+
+          {/* Full Games */}
+          <Typography variant="h6" component="h2" gutterBottom color="textSecondary">
+            Full Games
+          </Typography>
+          <StyledList aria-live="polite">
+            {fullGames.length > 0 ? (
+              fullGames.map((game) => (
+                <ListItem key={game._id} role="listitem">
+                  <ListItemText
+                    primary={`Game ${game.roomId}`}
+                    secondary={`Created: ${new Date(game.createdAt).toLocaleString()}`}
+                  />
+                  <Box display="flex" flexDirection="column" mr={4}>
+                    <Typography variant="body2" color="textSecondary">
+                      Player X: {game.playerX}
+                    </Typography>
+                    <Typography variant="body2" color="textSecondary">
+                      Player O: {game.playerO}
+                    </Typography>
+                  </Box>
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    disabled
+                    aria-label={`View Game ${game.roomId}`}
+                  >
+                    Full
+                  </Button>
+                </ListItem>
+              ))
+            ) : (
+              <Typography variant="body1" align="center" color="textSecondary">
+                No full games available.
+              </Typography>
+            )}
+          </StyledList>
+        </>
+      )}
+
+      {tabIndex === 1 && (
+        <StyledList aria-live="polite">
+          {completedGames.length > 0 ? (
+            completedGames.map((game) => (
               <ListItem key={game._id} role="listitem">
                 <ListItemText
                   primary={`Game ${game.roomId}`}
-                  secondary={`Created: ${new Date(game.createdAt).toLocaleString()}`}
+                  secondary={`Winner: ${game.winner}`}
                 />
                 <Box display="flex" flexDirection="column" mr={4}>
                   <Typography variant="body2" color="textSecondary">
@@ -116,36 +241,9 @@ const GameSessionList = () => {
                     Player O: {game.playerO || 'Waiting for player...'}
                   </Typography>
                 </Box>
-                <Button 
-                  variant="contained" 
-                  color="primary" 
-                  onClick={() => handleJoinGame(game._id)}
-                  aria-label={`Join Game ${game.roomId}`}
-                >
-                  Join
-                </Button>
-              </ListItem>
-            ))
-          ) : (
-            <Typography variant="body1" align="center" color="textSecondary">
-              No ongoing games available.
-            </Typography>
-          )}
-        </StyledList>
-      )}
-
-      {tabIndex === 1 && (
-        <StyledList>
-          {completedGames.length > 0 ? (
-            completedGames.map((game) => (
-              <ListItem key={game._id} role="listitem">
-                <ListItemText
-                  primary={`Game ${game.roomId}`}
-                  secondary={`Winner: ${game.winner}`}
-                />
-                <Button 
-                  variant="contained" 
-                  color="primary" 
+                <Button
+                  variant="contained"
+                  color="primary"
                   onClick={() => handleJoinGame(game._id)}
                   aria-label={`View Game ${game.roomId}`}
                 >
