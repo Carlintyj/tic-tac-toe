@@ -1,70 +1,270 @@
-# Getting Started with Create React App
+# Tic-Tac-Toe Game
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+This project is a real-time, multiplayer Tic-Tac-Toe game built with React for the frontend and Node.js for the backend. It allows users to play against each other in real time with synchronized game state management. 
 
-## Available Scripts
+## Features
+- **Real-time multiplayer**: Players can compete with others in real-time.
+- **Game state management**: The game state is handled by the backend and synced between players.
+- **Victory/Draw announcements**: The game displays a modal to announce the winner or a draw.
+- **Accessibility**: Includes keyboard navigation and screen reader support.
 
-In the project directory, you can run:
+## Tech Stack
+- **Frontend**: React, Material UI
+- **Backend**: Node.js (Express.js)
+- **State Management**: RESTful API for game state updates
+- **Database**: MongoDB
+- **Deployment**: Deployed on Vercel and AWS
 
-### `npm start`
+## Installation
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+### Prerequisites
+- Node.js (v20.x or above)
+- npm 
+- MongoDB
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+### Steps to Set Up
 
-### `npm test`
+#### 1. Clone the Repository
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+```bash
+git clone https://github.com/Carlintyj/tic-tac-toe.git
+cd tic-tac-toe
+```
 
-### `npm run build`
+#### 2. Install Dependencies
+For both frontend and backend, run the following:
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+```bash
+# For backend
+cd backend
+npm install
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+# For frontend
+cd ../src
+npm install
+```
+Put in the .env file and required content in the backend folder.
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
 
-### `npm run eject`
+#### 3. Start the Development Server
+```bash
+# For backend
+cd backend
+npm start
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+# For frontend
+cd ../src
+npm start
+```
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+The frontend will be available at http://localhost:3000, and the backend will run on http://localhost:4000 (or whatever port you have configured).
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+## How to Play
+1. Open the game in your browser.
+2. Enter your username and either join an existing game or create a new one.
+3. Take turns with your opponent to make a move on the grid.
+4. The game will notify you of a win or draw after the game ends.
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
 
-## Learn More
+## Accessibility Considerations
+This game has been designed to be accessible:
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+Keyboard Navigation:
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+- Use the Tab key to navigate between game squares.
+- Use the Enter or Space key to place a move.
 
-### Code Splitting
+Screen Reader Support:
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+- ARIA labels are used for game squares and notifications, providing real-time feedback for screen readers.
 
-### Analyzing the Bundle Size
+Visual Focus:
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+- Clear visual focus styles are applied for better keyboard navigation.
 
-### Making a Progressive Web App
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+### Architecture Diagram
 
-### Advanced Configuration
+![Architecture Diagram](<Architecture Diagram.png>)
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+### Architecture Breakdown:
+1. **User Interface**:
+   - Handles rendering the game board and UI components like the start screen and modals.
+   - Interacts with the backend to fetch game data and send player moves.
 
-### Deployment
+2. **Frontend (React)**:
+   - Controls the user experience (game flow, UI state).
+   - Communicates with the backend through REST API calls for game data.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+3. **REST API**:
+   - Manages game state and player moves by providing endpoints for actions like joining a game, making a move, and retrieving game status.
 
-### `npm run build` fails to minify
+4. **Authentication**:
+   - Manages user sessions, ensuring that players are properly identified and associated with the correct game.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+5. **Backend (Node.js / Express)**:
+   - Handles the core game logic, including checking for valid moves, detecting wins, and updating the game state.
+   - Serves as the central hub for all game-related actions.
+
+6. **Database**:
+   - Stores game data persistently, such as current game state, user information, and past game history.
+   - Implemented using **MongoDB**
+
+## API Specifications
+
+## **1. Create a New Game**
+### **Endpoint**
+**POST** `/api/games/`
+
+### **Request**
+- No request body required.
+
+### **Response**
+```json
+{
+  "gameId": "65b7c6a7c9a4e2d1b3a8e6f4"
+}
+```
+- `gameId` (string) – Unique identifier of the created game.
+
+![API call 1](<API call 1.png>)
+
+---
+
+## **2. Join a Game**
+### **Endpoint**
+**POST** `/api/games/{id}/join`
+
+### **Request**
+**Path Parameter:**
+- `id` (string) – The unique ID of the game.
+
+**Body:**
+```json
+{
+  "username": "player1"
+}
+```
+- `username` (string) – The username of the player joining the game.
+
+### **Response**
+```json
+{
+  "message": "Player assigned as X",
+  "board": [null, null, null, null, null, null, null, null, null],
+  "currentPlayer": "X",
+  "playerX": "player1",
+  "playerO": null
+}
+```
+- `message` (string) – Success or error message.
+- `board` (array) – Current game board.
+- `currentPlayer` (string) – The player whose turn it is.
+- `playerX` (string) – Username of player assigned to 'X'.
+- `playerO` (string) – Username of player assigned to 'O' (or `null` if unassigned).
+
+### **Error Responses**
+- **400 Bad Request**: Game is already full.
+- **404 Not Found**: Game not found.
+
+---
+
+## **3. Make a Move**
+### **Endpoint**
+**POST** `/api/games/{id}/move`
+
+### **Request**
+**Path Parameter:**
+- `id` (string) – The unique ID of the game.
+
+**Body:**
+```json
+{
+  "player": "X",
+  "position": 4
+}
+```
+- `player` (string) – The player making the move (`"X"` or `"O"`).
+- `position` (integer) – The board index (0-8) where the player wants to place their move.
+
+### **Response**
+```json
+{
+  "board": [null, null, null, null, "X", null, null, null, null],
+  "nextPlayer": "O",
+  "winner": null
+}
+```
+- `board` (array) – Updated game board.
+- `nextPlayer` (string) – The player who has the next turn.
+- `winner` (string or `null`) – `"X"`, `"O"`, `"draw"`, or `null` if no winner yet.
+
+### **Error Responses**
+- **400 Bad Request**: Invalid move or not the player's turn.
+- **404 Not Found**: Game not found.
+
+---
+
+## **4. Get Game State**
+### **Endpoint**
+**GET** `/api/games/{id}`
+
+### **Request**
+**Path Parameter:**
+- `id` (string) – The unique ID of the game.
+
+### **Response**
+```json
+{
+  "board": [null, null, null, null, "X", null, null, null, null],
+  "currentPlayer": "O",
+  "winner": null,
+  "playerX": "player1",
+  "playerO": "player2"
+}
+```
+- `board` (array) – Current game board.
+- `currentPlayer` (string) – The player whose turn it is.
+- `winner` (string or `null`) – `"X"`, `"O"`, `"draw"`, or `null` if no winner yet.
+- `playerX` (string) – Username of player assigned to 'X'.
+- `playerO` (string) – Username of player assigned to 'O'.
+
+### **Error Responses**
+- **404 Not Found**: Game not found.
+
+![API call 4](<API call 4.png>)
+
+---
+
+## **5. List All Games**
+### **Endpoint**
+**GET** `/api/games/`
+
+### **Request**
+- No request body required.
+
+### **Response**
+```json
+[
+  {
+    "_id": "65b7c6a7c9a4e2d1b3a8e6f4",
+    "board": [null, null, null, null, "X", null, null, null, null],
+    "currentPlayer": "O",
+    "winner": null,
+    "playerX": "player1",
+    "playerO": "player2",
+    "createdAt": "2025-02-15T12:00:00Z"
+  }
+]
+```
+- List of game objects, each containing:
+  - `_id` (string) – Game ID.
+  - `board` (array) – Current game board.
+  - `currentPlayer` (string) – The player whose turn it is.
+  - `winner` (string or `null`) – `"X"`, `"O"`, `"draw"`, or `null` if no winner yet.
+  - `playerX` (string) – Username of player assigned to 'X'.
+  - `playerO` (string) – Username of player assigned to 'O'.
+  - `createdAt` (string) – Timestamp when the game was created.
+
+### **Error Responses**
+- **500 Internal Server Error**: Failed to fetch games.

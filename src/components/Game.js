@@ -117,13 +117,20 @@ const Game = () => {
     <StyledContainer maxWidth="sm">
       <StyledPaper elevation={3}>
         <Box mb={3} display="flex" justifyContent="space-between">
-          <Button variant="outlined" color="primary" onClick={handleBackToSessions}>
+          <Button 
+            variant="outlined" 
+            color="primary" 
+            onClick={handleBackToSessions} 
+            aria-label="Back to sessions"
+          >
             Back to Sessions
           </Button>
         </Box>
         <Typography variant="h4" component="h2" gutterBottom>
           {winner ? (winner === 'draw' ? "🤝 It's a Draw! 🤝" : `🎉 ${winner === "X" ? (playerX === username ? 'You (X)' : playerX + " (X)") : (playerO === username ? 'You (O)' : playerO + " (O)")} Wins! 🎉`) : `Current Player: ${currentPlayer === "X" ? (playerX === username ? 'You (X)' : playerX + " (X)") : (playerO === username ? 'You (O)' : playerO + " (O)")}`}
         </Typography>
+        
+        {/* Announcement to screen reader */}
         <Box
           role="status"
           aria-live="polite"
@@ -143,9 +150,9 @@ const Game = () => {
       </StyledPaper>
 
       {/* Winner/Draw Announcement Modal */}
-      <Dialog open={openModal} onClose={() => setOpenModal(false)}>
+      <Dialog open={openModal} onClose={() => setOpenModal(false)} aria-labelledby="game-modal-title">
         <Box p={2}>
-          <DialogTitle sx={{ textAlign: 'center', fontWeight: 'bold', fontSize: '1.5rem' }}>
+          <DialogTitle id="game-modal-title" sx={{ textAlign: 'center', fontWeight: 'bold', fontSize: '1.5rem' }}>
             {draw ? "🤝 It's a Draw! 🤝" : "🎉 Congratulations! 🎉"}
           </DialogTitle>
           <DialogContent>
@@ -154,10 +161,10 @@ const Game = () => {
             </Typography>
           </DialogContent>
           <DialogActions sx={{ display: 'flex', justifyContent: 'center', pb: 2 }}>
-            <Button variant="contained" color="primary" onClick={handleBackToSessions}>
+            <Button variant="contained" color="primary" onClick={handleBackToSessions} aria-label="Back to sessions">
               Back to Sessions
             </Button>
-            <Button variant="outlined" color="secondary" onClick={() => setOpenModal(false)}>
+            <Button variant="outlined" color="secondary" onClick={() => setOpenModal(false)} aria-label="Close announcement modal">
               Close
             </Button>
           </DialogActions>
