@@ -5,6 +5,7 @@ import CssBaseline from '@mui/material/CssBaseline';
 import Home from './components/Home';
 import GameSessionList from './components/GameSessionList';
 import Game from './components/Game';
+import { UserProvider } from './context/UserContext';
 
 const theme = createTheme({
   palette: {
@@ -34,16 +35,18 @@ const theme = createTheme({
 
 function App() {
   return (
-    <ThemeProvider theme={theme}>
-      <CssBaseline />
-      <Router>
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/sessions" element={<GameSessionList />} />
-          <Route path="/game/:id" element={<Game />} />
-        </Routes>
-      </Router>
-    </ThemeProvider>
+    <UserProvider>
+      <ThemeProvider theme={theme}>
+        <CssBaseline />
+        <Router>
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/sessions" element={<GameSessionList />} />
+            <Route path="/game/:id" element={<Game />} />
+          </Routes>
+        </Router>
+      </ThemeProvider>
+    </UserProvider>
   );
 }
 

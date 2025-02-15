@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button, Container, Typography, Box, Modal, TextField } from '@mui/material';
 import { styled } from '@mui/system';
+import { useUser } from '../context/UserContext';
 
 const StyledContainer = styled(Container)(({ theme }) => ({
   display: 'flex',
@@ -48,6 +49,8 @@ const Home = () => {
   const [username, setUsername] = useState('');
   const [generatedUsername, setGeneratedUsername] = useState('');
 
+  const { saveUsername } = useUser();
+
   const handlePlayClick = () => {
     setOpenModal(true);
   };
@@ -60,14 +63,17 @@ const Home = () => {
     const anonymousName = `anonymous_${Math.floor(Math.random() * 10000)}`;
     setGeneratedUsername(anonymousName);
     setOpenModal(false);
+    saveUsername(anonymousName);
     navigate(`/sessions?username=${anonymousName}`);
   };
 
   const handleSubmitUsername = () => {
     if (username.trim()) {
       setGeneratedUsername(username);
+      saveUsername(username);
     } else {
       setGeneratedUsername('anonymous');
+      saveUsername('anonymous');
     }
     setOpenModal(false);
     navigate(`/sessions?username=${generatedUsername}`);
@@ -96,7 +102,7 @@ const Home = () => {
       <PopupModal open={openModal} onClose={() => setOpenModal(false)}>
         <PopupBox>
           <Typography variant="h5" component="h2" gutterBottom>
-            Enter Username or Continue as Anonymous
+            Enter Username
           </Typography>
           <TextField
             label="Username"
@@ -113,7 +119,6 @@ const Home = () => {
             </Button>
             <Button
               variant="outlined"
-              color="secondary"
               onClick={handleContinueAsAnonymous}
               fullWidth
               sx={{ marginTop: '10px' }}

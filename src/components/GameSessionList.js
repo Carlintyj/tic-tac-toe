@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { 
   Container, Typography, List, ListItem, ListItemText, Button, CircularProgress, 
   Box, Tabs, Tab, Paper, Avatar
 } from '@mui/material';
 import { styled } from '@mui/system';
-import { listGames, createGame } from '../services/api';
+import { listGames, createGame, joinGame } from '../services/api';
 
 const StyledContainer = styled(Container)(({ theme }) => ({
   paddingTop: theme.spacing(4),
@@ -24,9 +24,7 @@ const GameSessionList = () => {
   const [loading, setLoading] = useState(true);
   const [tabIndex, setTabIndex] = useState(0);
   const navigate = useNavigate();
-  const location = useLocation();
-  const params = new URLSearchParams(location.search);
-  const username = params.get('username'); // Extract username from the query string
+  const username = localStorage.getItem('username');
 
   useEffect(() => {
     fetchGames();
@@ -43,16 +41,22 @@ const GameSessionList = () => {
     }
   };
 
-  const handleJoinGame = (gameId) => {
-    navigate(`/game/${gameId}`);
+  const handleJoinGame = async (gameId) => {
+    try {
+      const { player } = await joinGame(gameId, username);
+      navigate(`/game/${gameId}`, { state: { player } });
+    } catch (error) {
+      console.error('Error joining game:', error.response?.data?.error || error.message);
+    }
   };
 
   const handleCreateNewGame = async () => {
     try {
       const { gameId } = await createGame();
-      navigate(`/game/${gameId}`);
+      const { player } = await joinGame(gameId, username);
+      navigate(`/game/${gameId}`, { state: { player } });
     } catch (error) {
-      console.error('Error creating new game:', error);
+      console.error('Error creating and joining the game:', error);
     }
   };
 
@@ -104,6 +108,14 @@ const GameSessionList = () => {
                   primary={`Game ${game.roomId}`}
                   secondary={`Created: ${new Date(game.createdAt).toLocaleString()}`}
                 />
+                <Box display="flex" flexDirection="column" mr={4}>
+                  <Typography variant="body2" color="textSecondary">
+                    Player X: {game.playerX || 'Waiting for player...'}
+                  </Typography>
+                  <Typography variant="body2" color="textSecondary">
+                    Player O: {game.playerO || 'Waiting for player...'}
+                  </Typography>
+                </Box>
                 <Button 
                   variant="contained" 
                   color="primary" 
@@ -155,7 +167,7 @@ const GameSessionList = () => {
           color="primary"
           size="large"
           onClick={handleCreateNewGame}
-          aria-label="Create a new game"
+          aria-label="Create and Join New Game"
         >
           Create New Game
         </Button>

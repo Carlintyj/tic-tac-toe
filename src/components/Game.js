@@ -19,14 +19,19 @@ const StyledPaper = styled(Paper)(({ theme }) => ({
 
 const Game = () => {
   const [board, setBoard] = useState(Array(9).fill(null));
+  const [player, setPlayer] = useState('');
   const [currentPlayer, setCurrentPlayer] = useState('X');
+  const [playerO, setPlayerO] = useState('');
+  const [playerX, setPlayerX] = useState('');
   const [winner, setWinner] = useState(null);
   const [announcement, setAnnouncement] = useState('');
   const [openModal, setOpenModal] = useState(false);
   const [draw, setDraw] = useState(false);
+  const [waitingForPlayer, setWaitingForPlayer] = useState(false);
   const winnerAnnounced = useRef(false);
   const { id: gameId } = useParams();
   const navigate = useNavigate();
+  const username = localStorage.getItem('username');
 
   useEffect(() => {
     fetchGameState();
@@ -43,22 +48,33 @@ const Game = () => {
 
   const fetchGameState = async () => {
     try {
-      const { board, currentPlayer, winner } = await getGameState(gameId);
+      const { board, currentPlayer, winner, playerO, playerX } = await getGameState(gameId);
       setBoard(board);
       setCurrentPlayer(currentPlayer);
+      setPlayer(playerX === username ? 'X' : 'O');
+      setPlayerO(playerO);
+      setPlayerX(playerX);
       setWinner(winner);
       setDraw(winner === 'draw');
+      
+      // Check if there is only one player
+      if (playerO == null || playerX == null) {
+        setWaitingForPlayer(true);
+        setAnnouncement("Waiting for another player...");
+      } else {
+        setWaitingForPlayer(false);
+      }
 
       if (winner === 'draw' && !winnerAnnounced.current) {
         setAnnouncement("It's a draw! 🤝");
         setOpenModal(true);
         winnerAnnounced.current = true;
       } else if (winner && !winnerAnnounced.current) {
-        setAnnouncement(`Congratulations! Player ${winner} wins! 🎉`);
+        setAnnouncement(`Congratulations! ${winner === "X" ? (playerX === username ? 'You (X)' : playerX + " (X)") : (playerO === username ? 'You (O)' : playerO + " (O)")} wins! 🎉`);
         setOpenModal(true);
         winnerAnnounced.current = true;
       } else if (!winner) {
-        setAnnouncement(`Player ${currentPlayer}'s turn.`);
+        setAnnouncement(`${currentPlayer}'s turn.`);
       }
     } catch (error) {
       console.error('Error fetching game state:', error);
@@ -67,12 +83,12 @@ const Game = () => {
   };
 
   const handleMove = async (index) => {
-    if (board[index] || winner) return;
+    if (board[index] || winner || waitingForPlayer) return;
 
     try {
-      const { board: newBoard, nextPlayer, winner: newWinner } = await makeMove(gameId, currentPlayer, index);
+      const { board: newBoard, winner: newWinner } = await makeMove(gameId, player, index);
       setBoard(newBoard);
-      setCurrentPlayer(nextPlayer);
+      setCurrentPlayer("");
       setWinner(newWinner);
       setDraw(newWinner === 'draw');
 
@@ -81,11 +97,11 @@ const Game = () => {
         setOpenModal(true);
         winnerAnnounced.current = true;
       } else if (newWinner && !winnerAnnounced.current) {
-        setAnnouncement(`Congratulations! Player ${newWinner} wins! 🎉`);
+        setAnnouncement(`Congratulations! ${winner === "X" ? (playerX === username ? 'You (X)' : playerX + " (X)") : (playerO === username ? 'You (O)' : playerO + " (O)")} wins! 🎉`);
         setOpenModal(true);
         winnerAnnounced.current = true;
       } else {
-        setAnnouncement(`Player ${nextPlayer}'s turn.`);
+        setAnnouncement(`${currentPlayer}'s turn.`);
       }
     } catch (error) {
       console.error('Error making move:', error);
@@ -100,13 +116,13 @@ const Game = () => {
   return (
     <StyledContainer maxWidth="sm">
       <StyledPaper elevation={3}>
-      <Box mb={3} display="flex" justifyContent="space-between">
-        <Button variant="outlined" color="primary" onClick={handleBackToSessions}>
-          Back to Sessions
-        </Button>
-      </Box>
+        <Box mb={3} display="flex" justifyContent="space-between">
+          <Button variant="outlined" color="primary" onClick={handleBackToSessions}>
+            Back to Sessions
+          </Button>
+        </Box>
         <Typography variant="h4" component="h2" gutterBottom>
-          {winner ? (winner === 'draw' ? "🤝 It's a Draw! 🤝" : `🎉 Player ${winner} Wins! 🎉`) : `Current Player: ${currentPlayer}`}
+          {winner ? (winner === 'draw' ? "🤝 It's a Draw! 🤝" : `🎉 ${winner === "X" ? (playerX === username ? 'You (X)' : playerX + " (X)") : (playerO === username ? 'You (O)' : playerO + " (O)")} Wins! 🎉`) : `Current Player: ${currentPlayer === "X" ? (playerX === username ? 'You (X)' : playerX + " (X)") : (playerO === username ? 'You (O)' : playerO + " (O)")}`}
         </Typography>
         <Box
           role="status"
@@ -115,6 +131,14 @@ const Game = () => {
         >
           {announcement}
         </Box>
+
+        {/* Player turn and opponent information for screen reader */}
+        <Typography variant="h6" component="p" color="textSecondary">
+          {waitingForPlayer && (
+            "Waiting for another player..."
+          )}
+        </Typography>
+        
         <Board board={board} onMove={handleMove} />
       </StyledPaper>
 
@@ -126,7 +150,7 @@ const Game = () => {
           </DialogTitle>
           <DialogContent>
             <Typography variant="h6" align="center">
-              {draw ? "The game ended in a tie! Well played!" : `Player <strong>${winner}</strong> is the champion! 🏆`}
+              {draw ? "The game ended in a tie! Well played!" : `${winner === "X" ? (playerX === username ? 'You (X)' : playerX + " (X)") : (playerO === username ? 'You (O)' : playerO + " (O)")} is the champion! 🏆`}
             </Typography>
           </DialogContent>
           <DialogActions sx={{ display: 'flex', justifyContent: 'center', pb: 2 }}>

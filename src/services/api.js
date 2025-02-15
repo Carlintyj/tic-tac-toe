@@ -7,6 +7,15 @@ export const createGame = async () => {
   return response.data;
 };
 
+export const joinGame = async (gameId, username) => {
+  try {
+    const response = await axios.post(`${API_URL}/games/${gameId}/join`, { username });
+    return response.data;
+  } catch (error) {
+    throw error.response?.data?.error || 'Error joining the game';
+  }
+};
+
 export const makeMove = async (gameId, player, position) => {
   const response = await axios.post(`${API_URL}/games/${gameId}/move`, { player, position });
   return response.data;

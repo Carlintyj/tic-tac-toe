@@ -17,6 +17,36 @@ router.post('/', async (req, res) => {
   }
 });
 
+// Join a game (assign 'X' or 'O')
+router.post('/:id/join', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { username } = req.body;
+
+    const game = await Game.findById(id);
+    if (!game) return res.status(404).json({ error: 'Game not found' });
+    console.log("1")
+
+    const result = await game.addPlayer(username);
+    console.log("2")
+    
+    if (!result.success) {
+      return res.status(400).json({ error: result.message });
+    }
+    console.log("3")
+
+    res.json({
+      message: result.message,
+      board: game.board,
+      currentPlayer: game.currentPlayer,
+      playerX: game.playerX,
+      playerO: game.playerO,
+    });
+  } catch (error) {
+    res.status(500).json({ error: 'Error joining the game' });
+  }
+});
+
 // Make a move
 router.post('/:id/move', async (req, res) => {
   try {
@@ -26,7 +56,12 @@ router.post('/:id/move', async (req, res) => {
     const game = await Game.findById(id);
     if (!game) return res.status(404).json({ error: 'Game not found' });
 
+    // Validate the player and the move
     if (game.winner || game.board[position]) return res.status(400).json({ error: 'Invalid move' });
+
+    if (player !== game.currentPlayer) {
+      return res.status(400).json({ error: `It's ${game.currentPlayer}'s turn` });
+    }
 
     game.board[position] = player;
     game.currentPlayer = player === 'X' ? 'O' : 'X';
@@ -60,6 +95,8 @@ router.get('/:id', async (req, res) => {
       board: game.board,
       currentPlayer: game.currentPlayer,
       winner: game.winner,
+      playerX: game.playerX,
+      playerO: game.playerO,
     });
   } catch (error) {
     res.status(500).json({ error: 'Error fetching game state' });
@@ -101,6 +138,5 @@ function checkWinner(board) {
 
   return null;
 }
-
 
 module.exports = router;
