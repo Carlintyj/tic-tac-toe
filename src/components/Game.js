@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Button, Paper, Typography, Box, Container } from '@mui/material';
+import { Button, Paper, Typography, Box, Container, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
 import { styled } from '@mui/system';
 import Board from './Board';
 import { makeMove, getGameState } from '../services/api';
@@ -14,6 +14,7 @@ const StyledPaper = styled(Paper)(({ theme }) => ({
   padding: theme.spacing(3),
   borderRadius: theme.shape.borderRadius,
   boxShadow: theme.shadows[3],
+  textAlign: 'center',
 }));
 
 const Game = () => {
@@ -21,12 +22,17 @@ const Game = () => {
   const [currentPlayer, setCurrentPlayer] = useState('X');
   const [winner, setWinner] = useState(null);
   const [announcement, setAnnouncement] = useState('');
+  const [openModal, setOpenModal] = useState(false);
+  const [draw, setDraw] = useState(false);
+  const winnerAnnounced = useRef(false);
   const { id: gameId } = useParams();
   const navigate = useNavigate();
 
   useEffect(() => {
     fetchGameState();
-  }, []); // Removed gameId dependency
+    const interval = setInterval(fetchGameState, 1000);
+    return () => clearInterval(interval);
+  }, [gameId]);
 
   useEffect(() => {
     if (announcement) {
@@ -41,7 +47,19 @@ const Game = () => {
       setBoard(board);
       setCurrentPlayer(currentPlayer);
       setWinner(winner);
-      setAnnouncement(`Game loaded. ${winner ? `Player ${winner} has won!` : `Player ${currentPlayer}'s turn.`}`);
+      setDraw(winner === 'draw');
+
+      if (winner === 'draw' && !winnerAnnounced.current) {
+        setAnnouncement("It's a draw! 🤝");
+        setOpenModal(true);
+        winnerAnnounced.current = true;
+      } else if (winner && !winnerAnnounced.current) {
+        setAnnouncement(`Congratulations! Player ${winner} wins! 🎉`);
+        setOpenModal(true);
+        winnerAnnounced.current = true;
+      } else if (!winner) {
+        setAnnouncement(`Player ${currentPlayer}'s turn.`);
+      }
     } catch (error) {
       console.error('Error fetching game state:', error);
       setAnnouncement('Error loading game. Please try again.');
@@ -56,9 +74,16 @@ const Game = () => {
       setBoard(newBoard);
       setCurrentPlayer(nextPlayer);
       setWinner(newWinner);
+      setDraw(newWinner === 'draw');
 
-      if (newWinner) {
-        setAnnouncement(`Player ${newWinner} wins!`);
+      if (newWinner === 'draw' && !winnerAnnounced.current) {
+        setAnnouncement("It's a draw! 🤝");
+        setOpenModal(true);
+        winnerAnnounced.current = true;
+      } else if (newWinner && !winnerAnnounced.current) {
+        setAnnouncement(`Congratulations! Player ${newWinner} wins! 🎉`);
+        setOpenModal(true);
+        winnerAnnounced.current = true;
       } else {
         setAnnouncement(`Player ${nextPlayer}'s turn.`);
       }
@@ -75,8 +100,13 @@ const Game = () => {
   return (
     <StyledContainer maxWidth="sm">
       <StyledPaper elevation={3}>
-        <Typography variant="h4" component="h2" gutterBottom align="center">
-          {winner ? `Winner: ${winner}` : `Current player: ${currentPlayer}`}
+      <Box mb={3} display="flex" justifyContent="space-between">
+        <Button variant="outlined" color="primary" onClick={handleBackToSessions}>
+          Back to Sessions
+        </Button>
+      </Box>
+        <Typography variant="h4" component="h2" gutterBottom>
+          {winner ? (winner === 'draw' ? "🤝 It's a Draw! 🤝" : `🎉 Player ${winner} Wins! 🎉`) : `Current Player: ${currentPlayer}`}
         </Typography>
         <Box
           role="status"
@@ -86,23 +116,29 @@ const Game = () => {
           {announcement}
         </Box>
         <Board board={board} onMove={handleMove} />
-        <Box mt={3} display="flex" justifyContent="space-between">
-          <Button
-            variant="outlined"
-            color="primary"
-            onClick={handleBackToSessions}
-          >
-            Back to Sessions
-          </Button>
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={fetchGameState}
-          >
-            Refresh Game
-          </Button>
-        </Box>
       </StyledPaper>
+
+      {/* Winner/Draw Announcement Modal */}
+      <Dialog open={openModal} onClose={() => setOpenModal(false)}>
+        <Box p={2}>
+          <DialogTitle sx={{ textAlign: 'center', fontWeight: 'bold', fontSize: '1.5rem' }}>
+            {draw ? "🤝 It's a Draw! 🤝" : "🎉 Congratulations! 🎉"}
+          </DialogTitle>
+          <DialogContent>
+            <Typography variant="h6" align="center">
+              {draw ? "The game ended in a tie! Well played!" : `Player <strong>${winner}</strong> is the champion! 🏆`}
+            </Typography>
+          </DialogContent>
+          <DialogActions sx={{ display: 'flex', justifyContent: 'center', pb: 2 }}>
+            <Button variant="contained" color="primary" onClick={handleBackToSessions}>
+              Back to Sessions
+            </Button>
+            <Button variant="outlined" color="secondary" onClick={() => setOpenModal(false)}>
+              Close
+            </Button>
+          </DialogActions>
+        </Box>
+      </Dialog>
     </StyledContainer>
   );
 };

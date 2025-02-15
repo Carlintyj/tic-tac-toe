@@ -33,6 +33,10 @@ router.post('/:id/move', async (req, res) => {
     game.winner = checkWinner(game.board);
     game.updatedAt = Date.now();
 
+    if (game.winner === 'draw') {
+      game.currentPlayer = null;
+    }
+
     await game.save();
 
     res.json({
@@ -91,7 +95,12 @@ function checkWinner(board) {
     }
   }
 
+  if (!board.includes(null)) {
+    return 'draw';
+  }
+
   return null;
 }
+
 
 module.exports = router;
