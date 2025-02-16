@@ -13,7 +13,7 @@ This project is a real-time, multiplayer Tic-Tac-Toe game built with React for t
 - **Backend**: Node.js (Express.js)
 - **State Management**: RESTful API for game state updates
 - **Database**: MongoDB
-- **Deployment**: Deployed on Vercel and AWS
+- **Deployment**: Deployed on AWS
 
 ## Installation
 
